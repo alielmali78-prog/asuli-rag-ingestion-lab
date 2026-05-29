@@ -1,10 +1,14 @@
-# Asuli RAG Ingestion Lab
+ # Asuli RAG Ingestion Lab
 
-Manifest-driven EPUB ingestion and RAG operations lab.
+Manifest-driven EPUB ingestion and RAG operations laboratory.
 
-This repository contains the public and shareable components of the ingestion pipeline used in the Asuli PDF Pilot project.
+This repository contains the public and shareable components of the ingestion and indexing pipeline used in the Asuli knowledge platform.
 
-## Goals
+The goal is not only to build a Retrieval-Augmented Generation (RAG) system, but also to operate it reliably at scale using manifest-driven workflows, operational recovery mechanisms, validation scripts, and metadata-aware collection management.
+
+---
+
+# Goals
 
 - EPUB ingestion
 - Batch processing
@@ -14,10 +18,12 @@ This repository contains the public and shareable components of the ingestion pi
 - Smoke testing
 - Operational recovery
 - Retrieval quality improvements
+- Collection registry management
+- Knowledge platform operations
 
 ---
 
-## Architecture
+# High-Level Architecture
 
 ```text
 EPUB
@@ -43,58 +49,9 @@ API
 
 ---
 
-## Components
+# Operational Flow
 
-### Scripts
-
-- ingest_epub_v2.py
-- add_epub_chunks_to_index_v1.py
-- batch_ingest_epubs_v2.sh
-- run_next_epub_batch.sh
-- test_epub_collections_smoke.sh
-
-### Documents
-
-- EPUB_OPERATION_ARCHITECTURE.md
-
----
-
-## Current Focus
-
-Building a manifest-driven knowledge operating system for large-scale EPUB and document collections.
-
----
-
-## Important
-
-This repository intentionally excludes:
-
-- private manifests
-- personal notes
-- API keys
-- tokens
-- private logs
-- personal brain files
-
-Only shareable components are published.
-
----
-
-## Related Articles
-
-Medium articles describing the architecture and operational lessons learned from the project will be linked here.
-Components
-Scripts
-Script	Purpose	Position in Flow
-ingest_epub_v2.py	Single EPUB parse eder ve chunk üretir	Ingestion Layer
-add_epub_chunks_to_index_v1.py	Chunk'ları Chroma'ya ekler	Index Layer
-batch_ingest_epubs_v2.sh	Manifest içindeki EPUB'ları sırayla işler	Batch Engine
-run_next_epub_batch.sh	Operasyonel giriş noktası, batch yönetimi yapar	Operations Layer
-test_epub_collections_smoke.sh	EPUB koleksiyon sağlık testi yapar	Validation Layer
-Documents
-Document	Purpose
-EPUB_OPERATION_ARCHITECTURE.md	Operasyonel mimari ve süreç açıklaması
-Architecture
+```text
 MASTER INVENTORY
         ↓
 PENDING MANIFEST
@@ -111,44 +68,158 @@ add_epub_chunks_to_index_v1.py
         ↓
 ChromaDB
         ↓
-pdf_pilot_api_v1.py
+FastAPI
         ↓
 /ask
+```
 
-Bu mimari zaten EPUB_OPERATION_ARCHITECTURE.md içinde tanımlı.
+The architecture is intentionally designed around operational reliability.
 
-Operational Entry Point
+Instead of treating ingestion as a one-time task, the platform treats ingestion as a repeatable and recoverable operational workflow.
 
-Normal kullanım:
+---
 
-cd ae-pdf-pilot
+# Components
 
-MAX=20 DOMAIN=general ./run_next_epub_batch.sh
+## Scripts
 
-Bu script:
+| Script | Purpose | Layer |
+|----------|----------|----------|
+| ingest_epub_v2.py | Parse a single EPUB and generate chunk files | Parsing |
+| add_epub_chunks_to_index_v1.py | Load generated chunks into ChromaDB | Indexing |
+| batch_ingest_epubs_v2.sh | Process EPUBs from an inventory file | Batch Engine |
+| run_next_epub_batch.sh | Operational entry point for ingestion batches | Operations |
+| test_epub_collections_smoke.sh | Validate active EPUB collections | Validation |
 
-batch'i çalıştırır
-processed manifest'i günceller
-pending manifest'i küçültür
-son işlenen batch'i kaydeder
+---
 
-Bu yüzden operasyonel giriş noktasıdır.
+## Documents
 
-Repository Structure
-ae-pdf-pilot/
-│
-├── scripts
-│   ├── ingest_epub_v2.py
-│   ├── add_epub_chunks_to_index_v1.py
-│   ├── batch_ingest_epubs_v2.sh
-│   ├── run_next_epub_batch.sh
-│   └── test_epub_collections_smoke.sh
+| Document | Purpose |
+|-----------|----------|
+| EPUB_OPERATION_ARCHITECTURE.md | Operational architecture and workflow documentation |
+
+---
+
+# Repository Structure
+
+```text
+asuli-rag-ingestion-lab
 │
 ├── docs
 │   └── EPUB_OPERATION_ARCHITECTURE.md
 │
-├── chunks/
-├── logs/
-├── registry/
-└── collections/
+├── scripts
+│   ├── batch_ingest_epubs_v2.sh
+│   ├── run_next_epub_batch.sh
+│   └── test_epub_collections_smoke.sh
+│
+├── examples
+│   ├── sample_manifest.txt
+│   └── sample_health_output.txt
+│
+├── README.md
+└── LICENSE
+```
 
+---
+
+# Quick Start
+
+Run the next ingestion batch:
+
+```bash
+MAX=20 DOMAIN=general ./run_next_epub_batch.sh
+```
+
+Run collection validation:
+
+```bash
+./test_epub_collections_smoke.sh
+```
+
+Example health endpoint:
+
+```bash
+curl -s http://127.0.0.1:8010/health | jq
+```
+
+Example output:
+
+```json
+{
+  "status": "ok",
+  "chunks": 44967,
+  "active_collections": 131
+}
+```
+
+---
+
+# Design Principles
+
+The project is built around several operational principles:
+
+- Manifest-driven processing
+- Idempotent ingestion workflows
+- Recovery-first design
+- Collection registry management
+- Metadata-aware retrieval
+- Observable batch execution
+- Validation before promotion
+
+These principles allow large document collections to be processed incrementally while maintaining operational control.
+
+---
+
+# Current Focus
+
+Building a manifest-driven knowledge operating system for large-scale EPUB and document collections.
+
+Current areas of experimentation include:
+
+- Collection orchestration
+- Registry-based routing
+- Retrieval optimization
+- Metadata ranking
+- Evidence-aware answering
+- Operational automation
+
+---
+
+# Security Notice
+
+This repository intentionally excludes:
+
+- Private manifests
+- Personal notes
+- API keys
+- Tokens
+- Private logs
+- Personal brain files
+- Internal infrastructure details
+- Production configuration
+
+Only public and shareable components are published.
+
+---
+
+# Related Articles
+
+Technical articles describing the architecture, operational lessons, and retrieval strategies used in this project will be linked here as they are published.
+
+Topics include:
+
+- Manifest-driven ingestion
+- EPUB operations at scale
+- Collection registry architecture
+- Metadata-aware retrieval
+- Evidence-aware answer generation
+- Knowledge Operating Systems
+- Operational RAG engineering
+
+---
+
+# License
+
+MIT License
